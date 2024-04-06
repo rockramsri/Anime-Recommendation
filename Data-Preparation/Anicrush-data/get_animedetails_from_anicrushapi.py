@@ -15,41 +15,30 @@ import pandas as pd
 from pandas import json_normalize
 import boto3
 
-URL="https://api.anicrush.to/"
-COMMENT_ENDPOINT="v1/comment/list"
-ANIME_INFO="shared/v2/movie/list"
-s3=boto3.resource(
-    service_name='s3',
-    region_name='ap-south-1',
-    aws_access_key_id='AKIAW3MEFXW7FMKXZGXR',
-    aws_secret_access_key='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'
-)
+class AnicrushBasicDetail:
+    URL=""
+    COMMENT_ENDPOINT=""
+    ANIME_INFO=""
+    s3=None
+    defaultUrl = ""
+    headers=None
 
-def getUrlbuilderFromPageIndexAndLimit(limit,endpoint,page):
-  return URL+endpoint+"?firstLetter=&limit="+str(limit)+"&page="+str(page)
+    def initialize_accessKeys(self):
+      self.s3=boto3.resource(
+          service_name='s3',
+          region_name='ap-south-1',
+          aws_access_key_id='AKIAW3MEFXW7FMKXZGXR',
+          aws_secret_access_key='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'
+          )
+    
+    def intialize_constants(self):
+      self.URL="https://api.anicrush.to/"
+      self.COMMENT_ENDPOINT="v1/comment/list"
+      self.ANIME_INFO="shared/v2/movie/list"
+      self.defaultUrl = "https://api.anicrush.to/shared/v2/movie/list?firstLetter=&limit=24&page=1"
 
-def getPagesFromWebsite(pageCount):
-  for i in range(0,pageCount):
-    break
-    #Logic if page by page is taken
-
-def getDataFrameFromAnimeAPIResponse(animeList):
-  animeListDf=json_normalize(animeList)
-  animeListDf['genres'].apply(lambda x: [i['name'] for i in x])
-  animeListDf['genres']=animeListDf['genres'].map(lambda x: ','.join([i['name'] for i in x]))
-  return animeListDf
-
-def getNumberOfAnimePagesFromAPIRespone(response):
-  #here
-  try:
-    print("Number of Anime pages: "+str(response['result']['totalPages']))
-    return response['result']['totalPages']
-  except:
-    print('Error in getting number of AnimeList')
-    return 0
-
-defaultUrl = "https://api.anicrush.to/shared/v2/movie/list?firstLetter=&limit=24&page=1"
-headers = {
+    def initialize_request_headers(self):
+      self.headers = {
         'Accept': 'application/json, text/plain, */*',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
         'Referer': 'https://anicrush.to/',
@@ -58,16 +47,58 @@ headers = {
         'Sec-Ch-Ua-Mobile':'?0',
         'Sec-Ch-Ua-Platform':"Windows",
         'X-Site':'anicrush'
-    }
+        }
 
-defaultResponse = requests.get(defaultUrl, headers=headers)
-st=getUrlbuilderFromPageIndexAndLimit(int(defaultResponse.json()['result']['totalItems']),ANIME_INFO,1)
-animeResponse=requests.get(st, headers=headers)
-finalDf=getDataFrameFromAnimeAPIResponse(animeResponse.json()['result']['movies'])
-finalDf.to_csv('AnimeListFromAnicrush.csv', index=False, encoding='utf-8')
+    def getUrlbuilderFromPageIndexAndLimit(self,limit,endpoint,page):
+      return self.URL+endpoint+"?firstLetter=&limit="+str(limit)+"&page="+str(page)
+    
+    def getPagesFromWebsite(pageCount):
+      for i in range(0,pageCount):
+        break
+        #Logic if page by page is taken
 
-"""Upload in s3 bucket
+    def getDataFrameFromAnimeAPIResponse(self,animeList):
+      animeListDf=json_normalize(animeList)
+      animeListDf['genres'].apply(lambda x: [i['name'] for i in x])
+      animeListDf['genres']=animeListDf['genres'].map(lambda x: ','.join([i['name'] for i in x]))
+      return animeListDf
 
-"""
+    def getNumberOfAnimePagesFromAPIRespone(self,response):
+      try:
+        print("Number of Anime pages: "+str(response['result']['totalPages']))
+        return response['result']['totalPages']
+      except:
+        print('Error in getting number of AnimeList')
+        return 0
 
-s3.Bucket('anicrushdatas').upload_file(Filename='AnimeListFromAnicrush.csv',Key='AnimeListFromAnicrush.csv')
+    # default constructor
+    def __init__(self):
+      self.intialize_constants()
+      self.initialize_accessKeys()
+      self.initialize_request_headers()
+
+    def upload_to_s3_bucket(self):
+      self.s3.Bucket('anicrushdatas').upload_file(Filename='AnimeListFromAnicrush.csv',Key='AnimeListFromAnicrush.csv')
+    
+    # Method to get Anime Info From AniCrush and upload in S3 bucket
+    def start_And_upload(self):
+      defaultResponse = requests.get(self.defaultUrl, headers=self.headers)
+      st=self.getUrlbuilderFromPageIndexAndLimit(int(defaultResponse.json()['result']['totalItems']),self.ANIME_INFO,1)
+      animeResponse=requests.get(st, headers=self.headers)
+      finalDf=self.getDataFrameFromAnimeAPIResponse(animeResponse.json()['result']['movies'])
+      finalDf.to_csv('AnimeListFromAnicrush.csv', index=False, encoding='utf-8')
+      self.upload_to_s3_bucket()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
