@@ -14,11 +14,13 @@ import requests
 import pandas as pd
 from pandas import json_normalize
 import boto3
+import json
 
 class AnicrushBasicDetail:
     URL=""
     COMMENT_ENDPOINT=""
     ANIME_INFO=""
+    EPISODE_INFO="shared/v2/episode/list?_movieId="
     s3=None
     defaultUrl = ""
     headers=None
@@ -36,6 +38,7 @@ class AnicrushBasicDetail:
       self.COMMENT_ENDPOINT="v1/comment/list"
       self.ANIME_INFO="shared/v2/movie/list"
       self.defaultUrl = "https://api.anicrush.to/shared/v2/movie/list?firstLetter=&limit=24&page=1"
+      self.EPISODE_INFO="shared/v2/episode/list?_movieId="
 
     def initialize_request_headers(self):
       self.headers = {
@@ -51,16 +54,32 @@ class AnicrushBasicDetail:
 
     def getUrlbuilderFromPageIndexAndLimit(self,limit,endpoint,page):
       return self.URL+endpoint+"?firstLetter=&limit="+str(limit)+"&page="+str(page)
+
+    def extract_values_List(json_data):
+      values = json_data.values()
+      distinct_values = []
+      for value in values:
+        if isinstance(value, list):
+          for item in value:
+            distinct_values.append(item)
+        else:
+            distinct_values.append(value)
+      return distinct_values
     
-    def getPagesFromWebsite(pageCount):
-      for i in range(0,pageCount):
-        break
-        #Logic if page by page is taken
+    def getAnimeFillerBinaryString(self,id):
+      response = requests.get(self.URL+self.EPISODE_INFO+str(id), headers=self.headers)
+      r=""
+      if 'result' in response.json():
+        df=json_normalize(self.extract_values_List(response.json()['result']))
+        m= df['is_filler'].values.astype(str)
+        r="".join(m)
+      return r
 
     def getDataFrameFromAnimeAPIResponse(self,animeList):
       animeListDf=json_normalize(animeList)
       animeListDf['genres'].apply(lambda x: [i['name'] for i in x])
       animeListDf['genres']=animeListDf['genres'].map(lambda x: ','.join([i['name'] for i in x]))
+      animeListDf['fillers']=animeListDf['id'].apply(self.getAnimeFillerBinaryString)
       return animeListDf
 
     def getNumberOfAnimePagesFromAPIRespone(self,response):
