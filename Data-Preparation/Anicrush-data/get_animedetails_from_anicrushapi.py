@@ -15,6 +15,7 @@ import pandas as pd
 from pandas import json_normalize
 import boto3
 import json
+import logging
 
 class AnicrushBasicDetail:
     URL=""
@@ -24,6 +25,7 @@ class AnicrushBasicDetail:
     s3=None
     defaultUrl = ""
     headers=None
+    animecount=0
 
     def initialize_accessKeys(self):
       self.s3=boto3.resource(
@@ -55,7 +57,7 @@ class AnicrushBasicDetail:
     def getUrlbuilderFromPageIndexAndLimit(self,limit,endpoint,page):
       return self.URL+endpoint+"?firstLetter=&limit="+str(limit)+"&page="+str(page)
 
-    def extract_values_List(json_data):
+    def extract_values_List(self,json_data):
       values = json_data.values()
       distinct_values = []
       for value in values:
@@ -68,6 +70,8 @@ class AnicrushBasicDetail:
     
     def getAnimeFillerBinaryString(self,id):
       response = requests.get(self.URL+self.EPISODE_INFO+str(id), headers=self.headers)
+      self.animecount+=1
+      print("Anime count {}",self.animecount)
       r=""
       if 'result' in response.json():
         df=json_normalize(self.extract_values_List(response.json()['result']))
@@ -79,6 +83,7 @@ class AnicrushBasicDetail:
       animeListDf=json_normalize(animeList)
       animeListDf['genres'].apply(lambda x: [i['name'] for i in x])
       animeListDf['genres']=animeListDf['genres'].map(lambda x: ','.join([i['name'] for i in x]))
+      print("Filler Extraction begins")
       animeListDf['fillers']=animeListDf['id'].apply(self.getAnimeFillerBinaryString)
       return animeListDf
 
@@ -107,6 +112,8 @@ class AnicrushBasicDetail:
       finalDf=self.getDataFrameFromAnimeAPIResponse(animeResponse.json()['result']['movies'])
       finalDf.to_csv('AnimeListFromAnicrush.csv', index=False, encoding='utf-8')
       self.upload_to_s3_bucket()
+r=AnicrushBasicDetail()
+r.start_And_upload()      
 
 
 

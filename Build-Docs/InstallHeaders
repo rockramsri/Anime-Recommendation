@@ -10,3 +10,5 @@ pip install -U mal-api
 
 pip install html5lib
 pip install pandas
+
+pip install transformers

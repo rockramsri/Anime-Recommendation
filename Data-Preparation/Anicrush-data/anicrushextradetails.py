@@ -107,4 +107,5 @@ class AnicrushExtraDetail:
     self.upload_in_s3_bucket(animeExtraDetailsDf)
 
 
-#getDataFrameFromAnimeAPIResponse(defaultResponse.json()['result'])
+r=AnicrushExtraDetail()
+r.start_And_upload()
