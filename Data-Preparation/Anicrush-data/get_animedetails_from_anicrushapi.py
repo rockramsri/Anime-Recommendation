@@ -10,12 +10,16 @@ Original file is located at
 #!pip install boto3
 #!pip install s3fs
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
 import requests
 import pandas as pd
 from pandas import json_normalize
 import boto3
 import json
-import logging
+#from Build_Docs.FileLogger import FileLogger
 
 class AnicrushBasicDetail:
     URL=""
@@ -26,6 +30,7 @@ class AnicrushBasicDetail:
     defaultUrl = ""
     headers=None
     animecount=0
+    INDIVIDUAL_ANIME_INFO="shared/v2/movie/getById/"
 
     def initialize_accessKeys(self):
       self.s3=boto3.resource(
@@ -41,6 +46,7 @@ class AnicrushBasicDetail:
       self.ANIME_INFO="shared/v2/movie/list"
       self.defaultUrl = "https://api.anicrush.to/shared/v2/movie/list?firstLetter=&limit=24&page=1"
       self.EPISODE_INFO="shared/v2/episode/list?_movieId="
+      self.INDIVIDUAL_ANIME_INFO="shared/v2/movie/getById/"
 
     def initialize_request_headers(self):
       self.headers = {
@@ -78,13 +84,20 @@ class AnicrushBasicDetail:
         m= df['is_filler'].values.astype(str)
         r="".join(m)
       return r
-
+    
+    def getAnimeDescriptionString(self,id):
+      response = requests.get(self.URL+self.INDIVIDUAL_ANIME_INFO+str(id), headers=self.headers)
+      if 'result' in response.json() and 'overview' in response.json()['result']:
+        return response.json()['result']['overview']
+      return ""
+    
     def getDataFrameFromAnimeAPIResponse(self,animeList):
       animeListDf=json_normalize(animeList)
       animeListDf['genres'].apply(lambda x: [i['name'] for i in x])
       animeListDf['genres']=animeListDf['genres'].map(lambda x: ','.join([i['name'] for i in x]))
       print("Filler Extraction begins")
       animeListDf['fillers']=animeListDf['id'].apply(self.getAnimeFillerBinaryString)
+      animeListDf['description']=animeListDf['id'].apply(self.getAnimeDescriptionString)
       return animeListDf
 
     def getNumberOfAnimePagesFromAPIRespone(self,response):
@@ -112,6 +125,9 @@ class AnicrushBasicDetail:
       finalDf=self.getDataFrameFromAnimeAPIResponse(animeResponse.json()['result']['movies'])
       finalDf.to_csv('AnimeListFromAnicrush.csv', index=False, encoding='utf-8')
       self.upload_to_s3_bucket()
+# logger = FileLogger("training")
+# logger.log("debug", "Starting training process...")
+# logger.log("info", "Training on epoch 1")
 r=AnicrushBasicDetail()
 r.start_And_upload()      
 
