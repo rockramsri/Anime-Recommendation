@@ -29,8 +29,8 @@ class AnicrushBasicDetail:
       self.s3=boto3.resource(
           service_name='s3',
           region_name='ap-south-1',
-          aws_access_key_id='AKIAW3MEFXW7FMKXZGXR',
-          aws_secret_access_key='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'
+          aws_access_key_id='AKIAWXXXXXXXXXZGXR',
+          aws_secret_access_key='1dPOXVXXXXXXXXXXXXXXXXXM1Eg/'
           )
     
     def intialize_constants(self):
