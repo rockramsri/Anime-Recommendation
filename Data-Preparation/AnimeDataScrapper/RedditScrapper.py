@@ -12,8 +12,8 @@ class RedditScrapper:
         print(animeName)
     
     def fetchData(self):
-        reddit = praw.Reddit(client_id="IVbyFluVv38VHU_GcU9xbA",         # your client id
-                                client_secret="RsZPzB1RcktthdibGALZD_DJDg_OJg",      # your client secret
+        reddit = praw.Reddit(client_id="IVbyFluXXXXXXXU9xbA",         # your client id
+                                client_secret="RsZPzB1XXXXXXXXXXXXg_OJg",      # your client secret
                                 user_agent="Maximuzz")        # your user agent
         filename = "Data-Preparation\AnimeDataScrapper\RedditData.csv"
         with open(filename, 'w', newline='') as file:
