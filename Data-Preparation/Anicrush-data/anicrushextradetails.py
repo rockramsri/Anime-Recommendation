@@ -34,13 +34,13 @@ class AnicrushExtraDetail:
   s3=boto3.resource(
     service_name='s3',
     region_name='ap-south-1',
-    aws_access_key_id='AKIAW3MEFXW7FMKXZGXR',
-    aws_secret_access_key='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'
+    aws_access_key_id='AKXXXXXXXXXXXXXXR',
+    aws_secret_access_key='1dPOXVrXXXXXXXXXXXXXe4M1Eg/'
     )
   s3_client= boto3.client('s3',
                         region_name='ap-south-1',
-                        aws_access_key_id='AKIAW3MEFXW7FMKXZGXR',
-                        aws_secret_access_key='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')
+                        aws_access_key_id='AKIAW3XXXXXXXXXMKXZGXR',
+                        aws_secret_access_key='1dPOXVrLOXXXXXXXXXXXXXXBFe4M1Eg/')
 
   def getAnimeIdsFromAnimeAPIResponse(self,animeList):
     idList=""
