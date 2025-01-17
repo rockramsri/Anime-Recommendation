@@ -52,7 +52,7 @@ class AnimeScrapper:
   def myAnimelist(self):
     print("anime");
     search = AnimeSearch(self.animeName);
-    auth = HTTPBasicAuth("dbf858acc27540fec28ad5c0dce932d4", "5e188df3d82064606b5a71d8cd77462b0965771dc973998612444bf9f67e9e76");
+    auth = HTTPBasicAuth("dbf858XXXXXXXXXdce932d4", "5e188df3d82064606XXXXXXXXXXXXXXXf67e9e76");
     p=1;
     animeListUrl=search.results[0].url+"/reviews?sort=suggested&filter_check=&filter_hide=&preliminary=on&p=";
     while(True):
