@@ -71,8 +71,8 @@ class AnimeScrapper:
         break
 
   def redditScrapper(self):
-    reddit = praw.Reddit(client_id="IVbyFluVv38VHU_GcU9xbA",         # your client id
-                               client_secret="RsZPzB1RcktthdibGALZD_DJDg_OJg",      # your client secret
+    reddit = praw.Reddit(client_id="IVbyFlXXXXXXXGcU9xbA",         # your client id
+                               client_secret="RsZPzBXXXXXXXXXXDg_OJg",      # your client secret
                                user_agent="Maximuzz")        # your user agent
 
     for submission in reddit.subreddit("all").search(self.animeName):
